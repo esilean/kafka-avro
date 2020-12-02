@@ -10,18 +10,18 @@ using System;
 
 namespace KafkaStudy.Consumer.Builder
 {
-    public class KafkaConsumerBuilder<T> : IKafkaConsumerBuilder<T>
+    public class KafkaConsumerBuilder<TAvro> : IKafkaConsumerBuilder<TAvro>
     {
         private readonly KafkaOptions _kafkaOptions;
-        private readonly ILogger<KafkaConsumerBuilder<T>> _logger;
+        private readonly ILogger<KafkaConsumerBuilder<TAvro>> _logger;
 
-        public KafkaConsumerBuilder(ILogger<KafkaConsumerBuilder<T>> logger, IOptions<KafkaOptions> kafkaOptions)
+        public KafkaConsumerBuilder(ILogger<KafkaConsumerBuilder<TAvro>> logger, IOptions<KafkaOptions> kafkaOptions)
         {
             _kafkaOptions = kafkaOptions?.Value ?? throw new ArgumentNullException(nameof(kafkaOptions));
             _logger = logger;
         }
 
-        public IConsumer<string, T> Build()
+        public IConsumer<string, TAvro> Build()
         {
             var consumerConfig = new ConsumerConfig()
             {
@@ -48,9 +48,9 @@ namespace KafkaStudy.Consumer.Builder
             var schemaRegistry = new CachedSchemaRegistryClient(schemaRegistryConfig);
 
             var consumerBuilder =
-                                new ConsumerBuilder<string, T>(consumerConfig)
+                                new ConsumerBuilder<string, TAvro>(consumerConfig)
                                     .SetKeyDeserializer(new AvroDeserializer<string>(schemaRegistry).AsSyncOverAsync())
-                                    .SetValueDeserializer(new AvroDeserializer<T>(schemaRegistry).AsSyncOverAsync())
+                                    .SetValueDeserializer(new AvroDeserializer<TAvro>(schemaRegistry).AsSyncOverAsync())
                                     .SetErrorHandler((_, e) =>
                                     {
                                         _logger.LogError(e.Reason);

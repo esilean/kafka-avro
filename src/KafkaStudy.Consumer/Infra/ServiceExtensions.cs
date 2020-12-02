@@ -1,5 +1,7 @@
-﻿using KafkaStudy.Common;
+﻿using AutoMapper;
+using KafkaStudy.Common;
 using KafkaStudy.Common.Avro;
+using KafkaStudy.Common.Messages;
 using KafkaStudy.Consumer.Builder;
 using KafkaStudy.Consumer.Builder.Interfaces;
 using MediatR;
@@ -17,24 +19,25 @@ namespace KafkaStudy.Consumer.Infra
             params Type[] handlerAssemblyMarkerTypes)
         {
             services.AddMediatR(handlerAssemblyMarkerTypes);
+            services.AddAutoMapper(handlerAssemblyMarkerTypes);
 
             services.AddTransient<IKafkaMessageConsumerManager>(serviceProvider =>
                                     new KafkaMessageConsumerManager(serviceProvider, services));
 
             //status-updated
-            services.AddTransient<KafkaTopicMessageConsumer<StatusUpdatedAvroMessage>>();
+            services.AddTransient<KafkaTopicMessageConsumer<StatusUpdatedAvroMessage, StatusUpdatedMessage>>();
             services.AddTransient<IKafkaConsumerBuilder<StatusUpdatedAvroMessage>, KafkaConsumerBuilder<StatusUpdatedAvroMessage>>();
 
             //order-created
-            services.AddTransient<KafkaTopicMessageConsumer<OrderCreatedAvroMessage>>();
+            services.AddTransient<KafkaTopicMessageConsumer<OrderCreatedAvroMessage, OrderCreatedMessage>>();
             services.AddTransient<IKafkaConsumerBuilder<OrderCreatedAvroMessage>, KafkaConsumerBuilder<OrderCreatedAvroMessage>>();
 
             services.AddTransient<ServiceResolver>(serviceProvider => key =>
             {
                 return key switch
                 {
-                    Topics.STATUS_UPDATED => serviceProvider.GetService<KafkaTopicMessageConsumer<StatusUpdatedAvroMessage>>(),
-                    Topics.ORDER_CREATED => serviceProvider.GetService<KafkaTopicMessageConsumer<OrderCreatedAvroMessage>>(),
+                    Topics.STATUS_UPDATED => serviceProvider.GetService<KafkaTopicMessageConsumer<StatusUpdatedAvroMessage, StatusUpdatedMessage>>(),
+                    Topics.ORDER_CREATED => serviceProvider.GetService<KafkaTopicMessageConsumer<OrderCreatedAvroMessage, OrderCreatedMessage>>(),
                     _ => throw new KeyNotFoundException(),
                 };
             });

@@ -1,5 +1,4 @@
-﻿using KafkaStudy.Common.Avro;
-using KafkaStudy.Common.Messages;
+﻿using AutoMapper;
 using KafkaStudy.Consumer.Builder.Interfaces;
 using KafkaStudy.Consumer.Notification;
 using MediatR;
@@ -11,22 +10,23 @@ using System.Threading;
 
 namespace KafkaStudy.Consumer.Builder
 {
-    public class KafkaTopicMessageConsumer<T> : IKafkaTopicMessageConsumer
+    public class KafkaTopicMessageConsumer<TAvro, TResponse> : IKafkaTopicMessageConsumer
     {
-        private readonly IKafkaConsumerBuilder<T> _kafkaConsumerBuilder;
-        private readonly ILogger<KafkaTopicMessageConsumer<T>> _logger;
+        private readonly IKafkaConsumerBuilder<TAvro> _kafkaConsumerBuilder;
+        private readonly ILogger<KafkaTopicMessageConsumer<TAvro, TResponse>> _logger;
         private readonly IServiceProvider _serviceProvider;
+        private readonly IMapper _mapper;
 
-        public KafkaTopicMessageConsumer(ILogger<KafkaTopicMessageConsumer<T>> logger,
-                                         IKafkaConsumerBuilder<T> kafkaConsumerBuilder,
-                                         IServiceProvider serviceProvider)
+        public KafkaTopicMessageConsumer(ILogger<KafkaTopicMessageConsumer<TAvro, TResponse>> logger,
+                                         IKafkaConsumerBuilder<TAvro> kafkaConsumerBuilder,
+                                         IServiceProvider serviceProvider,
+                                         IMapper mapper)
         {
             _logger = logger;
             _kafkaConsumerBuilder = kafkaConsumerBuilder;
             _serviceProvider = serviceProvider;
+            _mapper = mapper;
         }
-
-
 
         public void StartConsuming(string topic, CancellationToken cancellationToken)
         {
@@ -46,36 +46,13 @@ namespace KafkaStudy.Consumer.Builder
                         var messageTypeHeader = Encoding.UTF8.GetString(messageTypeEncoded);
                         var messageType = Type.GetType(messageTypeHeader);
 
-                        object message = null;
-                        if (messageType == typeof(StatusUpdatedMessage))
-                        {
-                            var statusUpdatedMessage = consumeResult.Message.Value as StatusUpdatedAvroMessage;
-                            message = StatusUpdatedMessage.Factory.Create(statusUpdatedMessage.Id, statusUpdatedMessage.Status);
-                        }
-                        else if (messageType == typeof(OrderCreatedMessage))
-                        {
-                            var orderCreatedMessage = consumeResult.Message.Value as OrderCreatedAvroMessage;
-                            message = OrderCreatedMessage.Factory.Create(
-                                                                        orderCreatedMessage.Id,
-                                                                        orderCreatedMessage.CustomerName,
-                                                                        orderCreatedMessage.Age,
-                                                                        orderCreatedMessage.Qty,
-                                                                        orderCreatedMessage.CartValue);
-                        }
-                        else
-                        {
-                            // TODO Try to make it generic
-                        }
-
-
+                        var message = _mapper.Map<TResponse>(consumeResult.Message.Value);
                         var messageNotificationType = typeof(MessageNotification<>).MakeGenericType(messageType);
                         var messageNotification = Activator.CreateInstance(messageNotificationType, message);
 
-                        using (var scope = _serviceProvider.CreateScope())
-                        {
-                            var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
-                            mediator.Publish(messageNotification, cancellationToken).GetAwaiter().GetResult();
-                        }
+                        using var scope = _serviceProvider.CreateScope();
+                        var mediator = scope.ServiceProvider.GetRequiredService<IMediator>();
+                        mediator.Publish(messageNotification, cancellationToken).GetAwaiter().GetResult();
                     }
                 }
                 catch (OperationCanceledException)

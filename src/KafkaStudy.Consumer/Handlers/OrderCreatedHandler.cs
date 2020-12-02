@@ -1,5 +1,4 @@
-﻿using KafkaStudy.Common.Avro;
-using KafkaStudy.Common.Messages;
+﻿using KafkaStudy.Common.Messages;
 using KafkaStudy.Consumer.Notification;
 using MediatR;
 using Microsoft.Extensions.Logging;
