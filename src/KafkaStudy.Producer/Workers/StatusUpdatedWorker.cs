@@ -31,7 +31,7 @@ namespace KafkaStudy.Producer.Workers
                 await _statusUpdatedProducer.ProduceAsync(fakeStatus, fakeStatus.Id, stoppingToken);
                 _logger.LogInformation("Message: {Id}, {Status}", fakeStatus.Id, fakeStatus.Status);
 
-                _logger.LogInformation("Worker running at: {time}", DateTimeOffset.Now);
+                _logger.LogInformation("StatusUpdatedWorker running at: {time}", DateTimeOffset.Now);
                 await Task.Delay(1000, stoppingToken);
                 auxValue++;
             }
