@@ -30,7 +30,7 @@ namespace KafkaStudy.Producer.Workers
                 await _orderCreatedProducer.ProduceAsync(fakeOrder, fakeOrder.Id, stoppingToken);
                 _logger.LogInformation("Message: {Id}, {CustomerName}, {CartValue}", fakeOrder.Id, fakeOrder.CustomerName, fakeOrder.CartValue);
 
-                _logger.LogInformation("OrderCreatedWorker running at: {time}", DateTimeOffset.Now);
+                _logger.LogInformation("OrderCreatedWorker running at:  {time}", DateTimeOffset.Now);
                 await Task.Delay(1000, stoppingToken);
             }
         }
