@@ -1,0 +1,33 @@
+﻿{
+  "doc": "Schema de criação de um pedido",
+  "fields": [
+    {
+      "doc": "Id do pedido",
+      "name": "Id",
+      "type": "string"
+    },
+    {
+      "doc": "Nome do Cliente",
+      "name": "CustomerName",
+      "type": "string"
+    },
+    {
+      "doc": "Idade do Cliente",
+      "name": "Age",
+      "type": "int"
+    },
+    {
+      "doc": "Quantidade de produtos",
+      "name": "Qty",
+      "type": "int"
+    },
+    {
+      "doc": "Valor total do carrinho",
+      "name": "CartValue",
+      "type": "double"
+    }
+  ],
+  "name": "OrderCreatedAvroMessage",
+  "namespace": "KafkaStudy.Common.Avro",
+  "type": "record"
+}

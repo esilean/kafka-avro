@@ -1,0 +1,18 @@
+﻿{
+  "doc": "Schema de atualização de status das mensagens",
+  "fields": [
+    {
+      "doc": "Id da mensagem",
+      "name": "Id",
+      "type": "string"
+    },
+    {
+      "doc": "Status da mensagem",
+      "name": "Status",
+      "type": "string"
+    }
+  ],
+  "name": "StatusUpdatedAvroMessage",
+  "namespace": "KafkaStudy.Common.Avro",
+  "type": "record"
+}
