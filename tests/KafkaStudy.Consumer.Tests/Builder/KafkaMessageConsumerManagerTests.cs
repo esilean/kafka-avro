@@ -15,8 +15,8 @@ namespace KafkaStudy.Consumer.Tests.Builder
         [Fact(DisplayName = "Start - Deve iniciar consumers unicos por topico", Skip = "NEED HELP")]
         public void Start_ConsumersShouldStartSingleConsumerPerMessage()
         {
-            var mockTopicFakeMessageConsumer = new Mock<KafkaTopicMessageConsumer<FakeMessage>>();
-            var mockTopicOtherFakeMessageConsumer = new Mock<KafkaTopicMessageConsumer<OtherFakeMessage>>();
+            var mockTopicFakeMessageConsumer = new Mock<KafkaTopicMessageConsumer<FakeMessage, FakeMessage>>();
+            var mockTopicOtherFakeMessageConsumer = new Mock<KafkaTopicMessageConsumer<OtherFakeMessage, OtherFakeMessage>>();
 
             var serviceCollection = new ServiceCollection();
             serviceCollection.AddSingleton(mockTopicFakeMessageConsumer.Object);

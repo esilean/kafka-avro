@@ -7,13 +7,14 @@
 // ------------------------------------------------------------------------------
 namespace KafkaStudy.Common.Avro
 {
+
     using global::Avro;
     using global::Avro.Specific;
 
     /// <summary>
     /// Schema de criação de um pedido
     /// </summary>
-    public partial class OrderCreatedAvroMessage : ISpecificRecord
+	public partial class OrderCreatedAvroMessage : ISpecificRecord
 	{
 		public static Schema _SCHEMA = Schema.Parse(@"{""type"":""record"",""name"":""OrderCreatedAvroMessage"",""namespace"":""KafkaStudy.Common.Avro"",""fields"":[{""name"":""Id"",""doc"":""Id do pedido"",""type"":""string""},{""name"":""CustomerName"",""doc"":""Nome do Cliente"",""type"":""string""},{""name"":""Age"",""doc"":""Idade do Cliente"",""type"":""int""},{""name"":""Qty"",""doc"":""Quantidade de produtos"",""type"":""int""},{""name"":""CartValue"",""doc"":""Valor total do carrinho"",""type"":""double""}]}");
 		/// <summary>

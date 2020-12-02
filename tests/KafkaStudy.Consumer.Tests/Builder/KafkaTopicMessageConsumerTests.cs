@@ -1,4 +1,5 @@
-﻿using Confluent.Kafka;
+﻿using AutoMapper;
+using Confluent.Kafka;
 using KafkaStudy.Common.Tests.Fake;
 using KafkaStudy.Consumer.Builder;
 using KafkaStudy.Consumer.Builder.Interfaces;
@@ -22,8 +23,9 @@ namespace KafkaStudy.Consumer.Tests.Builder
         {
             //Arrange
             const string expectedTopic = "fake-messages";
-            var stubLogger = Mock.Of<ILogger<KafkaTopicMessageConsumer<FakeAvro>>>();
+            var stubLogger = Mock.Of<ILogger<KafkaTopicMessageConsumer<FakeAvro, FakeMessage>>>();
             var stubMediator = Mock.Of<IMediator>();
+            var stubMapper = Mock.Of<IMapper>();
             var serviceProvider = BuildServiceProvider(stubMediator);
             var stubMessageConsumerBuilder = new Mock<IKafkaConsumerBuilder<FakeAvro>>();
             var mockConsumer = new Mock<IConsumer<string, FakeAvro>>();
@@ -36,7 +38,7 @@ namespace KafkaStudy.Consumer.Tests.Builder
                 .Throws<OperationCanceledException>();
 
             //Act
-            var sut = new KafkaTopicMessageConsumer<FakeAvro>(stubLogger, stubMessageConsumerBuilder.Object, serviceProvider);
+            var sut = new KafkaTopicMessageConsumer<FakeAvro, FakeMessage>(stubLogger, stubMessageConsumerBuilder.Object, serviceProvider, stubMapper);
             sut.StartConsuming(expectedTopic, CancellationToken.None);
 
             //Assert
@@ -47,8 +49,9 @@ namespace KafkaStudy.Consumer.Tests.Builder
         public void Start_ConsumingConsumesMessageFromConsumer()
         {
             //Arrange
-            var stubLogger = Mock.Of<ILogger<KafkaTopicMessageConsumer<FakeAvro>>>();
+            var stubLogger = Mock.Of<ILogger<KafkaTopicMessageConsumer<FakeAvro, FakeMessage>>>();
             var stubMediator = Mock.Of<IMediator>();
+            var stubMapper = Mock.Of<IMapper>();
             var serviceProvider = BuildServiceProvider(stubMediator);
             var stubMessageConsumerBuilder = new Mock<IKafkaConsumerBuilder<FakeAvro>>();
             var mockConsumer = new Mock<IConsumer<string, FakeAvro>>();
@@ -61,7 +64,7 @@ namespace KafkaStudy.Consumer.Tests.Builder
                 .Throws<OperationCanceledException>();
 
             //Act
-            var sut = new KafkaTopicMessageConsumer<FakeAvro>(stubLogger, stubMessageConsumerBuilder.Object, serviceProvider);
+            var sut = new KafkaTopicMessageConsumer<FakeAvro, FakeMessage>(stubLogger, stubMessageConsumerBuilder.Object, serviceProvider, stubMapper);
             sut.StartConsuming("fake-messages", CancellationToken.None);
 
             //Assert
@@ -71,8 +74,9 @@ namespace KafkaStudy.Consumer.Tests.Builder
         [Fact(DisplayName = "Start - Deve fechar o consumer quando cancelado")]
         public void Start_ConsumingClosesConsumerWhenCancelled()
         {
-            var stubLogger = Mock.Of<ILogger<KafkaTopicMessageConsumer<FakeAvro>>>();
+            var stubLogger = Mock.Of<ILogger<KafkaTopicMessageConsumer<FakeAvro, FakeMessage>>>();
             var stubMediator = Mock.Of<IMediator>();
+            var stubMapper = Mock.Of<IMapper>();
             var serviceProvider = BuildServiceProvider(stubMediator);
             var stubMessageConsumerBuilder = new Mock<IKafkaConsumerBuilder<FakeAvro>>();
             var mockConsumer = new Mock<IConsumer<string, FakeAvro>>();
@@ -84,7 +88,7 @@ namespace KafkaStudy.Consumer.Tests.Builder
                 .Setup(x => x.Consume(It.IsAny<CancellationToken>()))
                 .Throws<OperationCanceledException>();
 
-            var sut = new KafkaTopicMessageConsumer<FakeAvro>(stubLogger, stubMessageConsumerBuilder.Object, serviceProvider);
+            var sut = new KafkaTopicMessageConsumer<FakeAvro, FakeMessage>(stubLogger, stubMessageConsumerBuilder.Object, serviceProvider, stubMapper);
             sut.StartConsuming("fake-messages", CancellationToken.None);
 
             mockConsumer.Verify(x => x.Close());
@@ -97,8 +101,9 @@ namespace KafkaStudy.Consumer.Tests.Builder
             var fakeMessage = new FakeMessage("some-property-value");
             var cancellationTokenSource = new CancellationTokenSource();
             var mockMediator = new Mock<IMediator>();
+            var stubMapper = Mock.Of<IMapper>();
             var serviceProvider = BuildServiceProvider(mockMediator.Object);
-            var stubLogger = Mock.Of<ILogger<KafkaTopicMessageConsumer<FakeAvro>>>();
+            var stubLogger = Mock.Of<ILogger<KafkaTopicMessageConsumer<FakeAvro, FakeMessage>>>();
             var stubConsumer = new Mock<IConsumer<string, FakeAvro>>();
             stubConsumer
                 .Setup(x => x.Consume(It.IsAny<CancellationToken>()))
@@ -109,7 +114,7 @@ namespace KafkaStudy.Consumer.Tests.Builder
                 .Returns(stubConsumer.Object);
 
             //Act
-            var sut = new KafkaTopicMessageConsumer<FakeAvro>(stubLogger, stubMessageConsumerBuilder.Object, serviceProvider);
+            var sut = new KafkaTopicMessageConsumer<FakeAvro, FakeMessage>(stubLogger, stubMessageConsumerBuilder.Object, serviceProvider, stubMapper);
             //Running inside another thread to use "cancellationTokenSource.Cancel()"
             Task.Run(() => sut.StartConsuming("fake-messages", cancellationTokenSource.Token));
             Task.Delay(500).Wait();
